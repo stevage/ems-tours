@@ -1,0 +1,33 @@
+{
+  "name": "emscycletours",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node node_modules/budo/bin/cmd.js src/index.js:static/bundle.js --live -- -t [ babelify --presets [ es2015 ] ]",
+    "build": "node node_modules/browserify/bin/cmd.js ./src/index.js -o static/bundle.js -t babelify"
+  },
+  "author": "Steve Bennett <me@stevebennett.me> (http://stevebennett.me)",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "babelify": "^7.3.0",
+    "browserify": "^13.1.1",
+    "budo": "^9.3.0",
+    "chroniton": "^1.1.0",
+    "d3": "^4.4.0",
+    "d3-request": "^1.0.3",
+    "mapbox-gl": "^0.29.0",
+    "urijs": "^1.18.4"
+  },
+  "babel": {
+    "presets": [
+      "es2015"
+    ]
+  },
+  "devDependencies": {
+    "babel-preset-es2015": "^6.18.0",
+    "babelify": "^7.3.0",
+    "browserify": "^13.1.1"
+  }
+}
