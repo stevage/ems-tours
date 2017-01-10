@@ -51380,28 +51380,41 @@ Object.defineProperty(exports, '__esModule', { value: true });
 /* jshint esnext: true */
 var d3 = require('d3');
 var mapboxgl = require('mapbox-gl');
-var styleUrl = 'https://api.mapbox.com/styles/v1/stevage/cixfrvgyy00fz2pohtlvhosae' + '?fresh=true&access_token=pk.eyJ1Ijoic3RldmFnZSIsImEiOiJGcW03aExzIn0.QUkUmTGIO3gGt83HiRIjQw&_=5';
+var styleUrl = 'https://api.mapbox.com/styles/v1/stevage/cixfrvgyy00fz2pohtlvhosae' + '?fresh=true&access_token=pk.eyJ1Ijoic3RldmFnZSIsImEiOiJGcW03aExzIn0.QUkUmTGIO3gGt83HiRIjQw&_=6';
 var layers = [];
 var chroniton = require('chroniton');
 var urijs = require('urijs');
 
 var map;
 
+var filterYear;
+var filterPerson = urijs.parseQuery(window.location.search).person;
+
 function setYearFilter(year) {
-    // this whole thing about ppl is because line-width isn't currently supported as a data-driven property https://github.com/mapbox/mapbox-gl-style-spec/issues/633
-    pplNumbers.forEach(function (ppl) {
-        map.setFilter('tour-' + ppl, pplFilter(ppl, year));
-        map.setFilter('tour-labels-' + ppl, pplFilter(ppl, year));
-    });
+    filterYear = year;
+    updateFilter();
 }
 
-var participantFilter = urijs.parseQuery(window.location.search).person;
+function setPersonFilter(person) {
+    filterPerson = person;
+    updateFilter();
+}
+
+var pplNumbers = [1, 2, 4, 8, 16, 32];
+
+function updateFilter() {
+    // this whole thing about ppl is because line-width isn't currently supported as a data-driven property https://github.com/mapbox/mapbox-gl-style-spec/issues/633
+    pplNumbers.forEach(function (ppl) {
+        map.setFilter('tour-' + ppl, pplFilter(ppl, filterYear));
+        map.setFilter('tour-labels-' + ppl, pplFilter(ppl, filterYear));
+    });
+}
 
 function pplFilter(ppl, year) {
     var ret = ['all', ['>=', 'Participants', ppl], ['<', 'Participants', ppl * 2]];
     if (year && year !== 2007) ret.push(['==', 'Year', year]);
-    if (participantFilter) {
-        ret.push(['!=', participantFilter, '']);
+    if (filterPerson) {
+        ret.push(['!=', filterPerson, '']);
     }
     // This filters out private cycle tours...
     ret.push(['has', 'Steve']);
@@ -51409,16 +51422,20 @@ function pplFilter(ppl, year) {
     return ret;
 }
 
-var pplNumbers = [1, 2, 4, 8, 16, 32];
+var yearColor = function yearColor(year) {
+    return 'hsl(' + ((year - 2016) * 50 + 240) + ', ' + ((year - 2016) * 4 + 90) + '%, 50%)';
+};
 
 var yearColorStops = {
     property: 'Year',
     type: 'exponential',
     stops: [2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016].map(function (year) {
-        return [year, 'hsl(' + ((year - 2016) * 50 + 240) + ', ' + ((year - 2016) * 4 + 90) + '%, 50%)'];
+        return [year, yearColor(year)];
     }),
     colorSpace: 'hcl'
 };
+
+function updateStyle() {}
 
 d3.json(styleUrl, function (style) {
 
@@ -51502,7 +51519,7 @@ d3.json(styleUrl, function (style) {
         style: style, //'mapbox://styles/gisfeedback/ciwmwq2gb00fa2ppabho4z39c/', //stylesheet location
         center: [144.97, -37.82], // starting position
         zoom: 7,
-        minZoom: 7,
+        minZoom: 6.5,
         pitch: 0
     });
 
@@ -51529,6 +51546,12 @@ d3.json(styleUrl, function (style) {
         })
         //.play()
         .loop(true).playButton(true).hideLabel());
+
+        d3.select('#filters').selectAll('label').data(['Alex', 'Steve', 'Felix', 'Ellen', 'Tom', 'Dave B', 'Andrew', 'Lachie', 'Matt', 'Rhonda', 'Miriam', 'Rowena', 'Rosie', 'Jo', 'Hayden', 'Mikhaila', 'Mitch', 'Nathan', 'Rob'].sort()).enter().append('label').html(function (d) {
+            return '<label><input type="radio" name="checkbox" id="' + d + '-checkbox">' + d + '</label>';
+        }).on('click', function (d) {
+            return setPersonFilter(d);
+        });
     });
 });
 
