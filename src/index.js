@@ -10,7 +10,7 @@ var urijs = require('urijs');
 var map;
 
 var filterYear;
-var filterPerson = urijs.parseQuery(window.location.search).person;
+var filterPerson = urijs.parseQuery(window.location.search).person || 'Everyone';
 
 function setYearFilter(year) {
     filterYear = year;
@@ -39,7 +39,7 @@ function pplFilter(ppl,year) {
     var ret = ['all', ['>=', 'Participants', ppl], ['<', 'Participants', ppl*2]];
     if (year && year !== 2007)
         ret.push(['==', 'Year', year]);
-    if (filterPerson) {
+    if (filterPerson && filterPerson !== 'Everyone') {
         ret.push(['!=', filterPerson, '']);
     }
     // This filters out private cycle tours...
@@ -151,7 +151,9 @@ d3.json(styleUrl, function(style) {
     });
 
     map.on('mousemove',e => {
-        var features = map.queryRenderedFeatures(e.point, { layers: layers }); 
+        var features = map.queryRenderedFeatures([
+            [ e.point.x - 2, e.point.y -2 ], [ e.point.x + 2, e.point.y + 2]],
+            { layers: layers }); 
         // Change the cursor style as a UI indicator.
         map.getCanvas().style.cursor = (features && features.length) ? 'pointer' : '';
         if (features && features.length) {
@@ -184,13 +186,14 @@ d3.json(styleUrl, function(style) {
 
         d3.select('#filters')
             .selectAll('label')
-            .data(['Alex','Steve','Felix','Ellen','Tom','Dave B','Andrew','Lachie','Matt','Rhonda', 
-                  'Miriam','Rowena','Rosie', 'Jo','Hayden','Mikhaila','Mitch','Nathan','Rob'].sort())
+            .data(['Everyone', ...['Everyone', 'Alex','Steve','Felix','Ellen','Tom','Dave B','Andrew','Lachie','Matt','Rhonda', 
+                  'Miriam','Rowena','Rosie', 'Jo','Hayden','Mikhaila','Mitch','Nathan','Rob'].sort()])
             .enter()
             .append('label')
                 
-                .html(d => `<label><input type="radio" name="checkbox" id="${d}-checkbox">${d}</label>`)
+                .html(d => `<label id="${d}-label"><input type="radio" name="checkbox" id="${d}-checkbox"><span>${d}</span></input></label>`)
                 .on('click', d=>setPersonFilter(d))
             ;
+        document.querySelector(`#${filterPerson}-checkbox`).click();
     });
 });

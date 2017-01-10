@@ -53,10 +53,24 @@ body {
     top: 1em;
     background:#eee;
     /*height:200px;*/
-    padding:1em;
+    padding:0.25em 0em;
     
 }
 
 #filters label {
     display:block;
+
 }
+
+#filters span {
+    padding:0.25em 0.5em;
+    display:block;
+}
+
+input[type="radio"] { 
+    display: none; 
+}
+
+:checked+span{ 
+    background: hsl(220,40%,80%);
+} 
